@@ -1,5 +1,16 @@
 #!/bin/bash
 
+iflag='false'
+
+while getopts 'i' flag; do
+  case "${flag}" in
+    i) iflag='true' ;;
+    *) echo "xxxx" ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
 mkdir -p ./youtube
 cd ./youtube
 
@@ -40,9 +51,11 @@ for url in `grep -o 'https.*index\.m3u8' ./index.m3u8`; do
 
   curl -s -o $m3u8 $url
 
-  if [[ -n `grep -o -m 1 'https.*\.ts' $m3u8` ]]; then
-    ffmpeg -nostdin -protocol_whitelist crypto,file,http,https,tcp,tls \
-      -i $m3u8 -movflags faststart -c copy $mp4
+  if ! "${iflag}"; then
+    if [[ -n `grep -o -m 1 'https.*\.ts' $m3u8` ]]; then
+      ffmpeg -nostdin -protocol_whitelist crypto,file,http,https,tcp,tls \
+        -i $m3u8 -movflags faststart -c copy $mp4
+    fi
   fi
 
   i=`expr $i + 1`
